@@ -1,8 +1,9 @@
+const pokemonList = document.getElementById('pokemonList')
+const loadMoreButton = document.getElementById('loadMoreButton')
 
-const offset = 0
+const maxRecords = 151
 const limit = 10
-const url = 'https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}'
-
+let offset = 0;
 
 
 function convertPokemonToHtml(pokemon){
@@ -13,7 +14,7 @@ function convertPokemonToHtml(pokemon){
 
             <div class="detail">
                 <ol class="types">
-                    ${pokemon.types.map((type) => `<li class="type">${type}</li>`).join('')}
+                    ${pokemon.types.map((type) => `<li class="type ${type}">${type}</li>`).join('')}
                 </ol>
                 <img src="${pokemon.photo}" alt="${pokemon.name}">
             </div>
@@ -21,10 +22,27 @@ function convertPokemonToHtml(pokemon){
     `
 }
 
-const pokemonList = document.getElementById('pokemonList')
+function loadPokemonItens(offset, limit){
+    pokeApi.getPokemons(offset, limit).then((pokemons = []) => { 
+        const newHtml = pokemons.map(convertPokemonToHtml).join('')
+        pokemonList.innerHTML += newHtml   
+    })
+}
 
-pokeApi.getPokemons().then((pokemons = []) => { 
-    const newHtml = pokemonList.innerHTML += pokemons.map(convertPokemonToHtml).join('')
-    pokemonList.innerHTML += newHtml   
+loadPokemonItens(offset, limit)
+
+loadMoreButton.addEventListener('click', () => {
+    offset += limit
+     
+    const qtdRecords = offset + limit
+
+    if(qtdRecords >= maxRecords) {
+        const newLimit = maxRecords - offset
+        loadPokemonItens(offset, newLimit)
+        loadMoreButton.parentElement.removeChild(loadMoreButton)
+    }else {
+        loadPokemonItens(offset, limit)
+    }
+
 })
-    
+
